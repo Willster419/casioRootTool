@@ -3,7 +3,7 @@ COLOR 9b
 CLS
 :menu
 CLS
-ECHO Casio Root Tool Plus version 1.7.1 by: Willster419
+ECHO Casio Root Tool Plus version 1.7.2 by: Willster419
 ECHO By using the script you understand that this is done at YOUR own risk.
 ECHO Make sure your phone has usb debugging mode enabled!
 ECHO Make sure drivers are installed!
@@ -482,6 +482,7 @@ adb shell su -c "/data/local/busybox mkdir /system/xbin"
 adb shell su -c "/data/local/busybox cp /data/local/busybox /system/xbin/busybox"
 adb shell su -c "chmod 755 /system/xbin/busybox"
 adb shell su -c "/system/xbin/busybox --install /system/xbin"
+adb install busybox.apk
 ECHO Done!
 adb shell sleep 2
 GOTO MENU

@@ -1,28 +1,19 @@
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
 # Executables
 *.exe
-*.out
-*.app
+
+# android packages
+*.apk
+
+# Application Extensions
+*.dll
+
+# Phone Images
+*.img
+
+# Phone Binaries
+busybox
+mkyaffs2image
+su
+
+#script that isn't mine
+onandroid

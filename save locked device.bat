@@ -3,17 +3,19 @@ COLOR 9b
 CLS
 :menu
 CLS
-ECHO Casio Lock Screen Saver Add-on by: Willster419
+ECHO Casio Locked Device Recovery Add-on by: Willster419
 ECHO By using the script you understand that this is done at YOUR own risk.
 ECHO Make sure drivers are installed and adb is enabled!
-ECHO Phone screen MUST be on!!!
+ECHO Phone screen MUST be on!
 ECHO Due to the different firmware versions of devices I cannot verify
-ECHO that this works 100%. But it's worth a try!
+ECHO that this works 100 percent.
+ECHO By continuing you understand that this will WIPE YOUR PHONE
 pause
-
-ECHO Attempting to save!
+ECHO Detecting Device...
+ECHO If this hangs for more than a minute, then you don't have adb on.
 adb wait-for-device
-ECHO Device detected, attempting fastboot!
+ECHO Device detected, attempting recovery! Approx time is 20 seconds
+ECHO Do NOT touch the screen at this time!
 adb shell input keyevent 5
 adb shell sleep 2
 adb shell sendevent /dev/input/event1 3 53 340
@@ -179,8 +181,12 @@ adb shell sendevent /dev/input/event1 3 48 0
 adb shell sendevent /dev/input/event1 0 2 0
 adb shell sendevent /dev/input/event1 0 0 0
 adb reboot bootloader
-ECHO rebooting...
-ECHO you should be in the bootloader now. at this point you want to erase data
-ECHO and then reboot
+ECHO waiting for fastboot...
+ping 1.1.1.1 -n 1 -w 20000 > nul
+ECHO wiping phone...
+fastboot -i 0x0409 erase userdata
+fastboot -i 0x0409 erase cache
+fastboot -i 0x0409 reboot
+ECHO Recovery Complete! You're device is wiped, but you have
+ECHO acces to it again! Enjoy!
 pause
-ECHO and by continue i mean exit the script

@@ -8,40 +8,61 @@ ECHO By using the script you understand that this is done at YOUR own risk.
 ECHO Make sure your phone has usb debugging mode enabled!
 ECHO Make sure drivers are installed!
 ECHO Phone screen MUST be on and unlocked!!!
-ECHO 1 - ROOT (top-down)
-ECHO 2 - ROOT (bottom-up)REQUIRES CORRECT MODDED BOOT/RECOVERY IMAGES IN EACH FOLDER
-ECHO 3 - Unroot (quick)
-ECHO 4 - Unroot(full)REQUIRES RIGHT STOCK BOOT/RECOVERY IMAGES IN STOCKIMAGES FOLDER
-ECHO 5 - Install (old working) root file manager
-ECHO 6 - Install Unroot kit
-ECHO 7 - Dump boot and recovery images(must have busybox and root)
-ECHO 8 - Install busybox(must be rooted)
-ECHO 9 - View Phone Version to get right boot/recovery images version
-ECHO 10 - Flash boot image(must have fastboot enabled)
-ECHO 11 - Flash recovery image(must have fastboot enabled)
-ECHO 12 - Flash a boot animation(must have busybox and root)
-ECHO 13 - Flash an "update.zip"
-ECHO 14 - Flash Inopath update REQUIRES ROOT AND CORRECT STOCK BOOT IMAGE/RECOVERY IN STOCKIMAGES FOLDER
+ECHO 1 - Root/Unroot menu
+ECHO 2 - Flash menu
+ECHO 3 - Install (old working) root file manager
+ECHO 4 - Install Unroot kit
+ECHO 5 - Dump boot and recovery images(must have busybox and root)
+ECHO 6 - Install busybox(must be rooted)
+ECHO 7 - View Phone Version to get right boot/recovery images version
 ECHO.
-ECHO 15 - Exit this tool
+ECHO 8 - Exit this tool
 ECHO.
 SET /P M=Type your choice then press ENTER:
-IF %M%==1 GOTO TD
-IF %M%==2 GOTO BU
-IF %M%==3 GOTO UR
-IF %M%==4 GOTO URF
-IF %M%==5 GOTO RFM
-IF %M%==6 GOTO UK
-IF %M%==7 GOTO DBR
-IF %M%==8 GOTO IB
-IF %M%==9 GOTO VPV
-IF %M%==10 GOTO FBI
-IF %M%==11 GOTO FRI
-IF %M%==12 GOTO FBA
-IF %M%==13 GOTO FUZ
-IF %M%==14 GOTO FIU
-IF %M%==15 GOTO EXIT
+IF %M%==1 GOTO RU
+IF %M%==2 GOTO FM
+IF %M%==3 GOTO RFM
+IF %M%==4 GOTO UK
+IF %M%==5 GOTO DBR
+IF %M%==6 GOTO IB
+IF %M%==7 GOTO VPV
+IF %M%==8 GOTO EXIT
 
+:RU
+cls
+ECHO 1 - ROOT (top-down)
+ECHO 2 - ROOT (bottom-up) *REQUIRES MODDED BOOT AND RECOVERY IMAGES
+ECHO     OF CURRENT DEVICE FIRMWARE IN EACH FOLDER
+ECHO 3 - Unroot (quick)
+ECHO 4 - Unroot (full) *REQUIRES STOCK BOOT AND RECOVERY IMAGES
+ECHO     OF CURRENT DEVICE FIRMWARE IN THE STOCKIMAGES FOLDER
+ECHO 5 - Back to main menu
+ECHO.
+SET /P N=Type your choice then press ENTER:
+IF %N%==1 GOTO TD
+IF %N%==2 GOTO BU
+IF %N%==3 GOTO UR
+IF %N%==4 GOTO URF
+IF %N%==5 GOTO menu
+
+:FM
+cls
+ECHO 1 - Flash boot image from bootImage folder(fastboot required)
+ECHO 2 - Flash recovery image from recoveryImage folder(fastboot required)
+ECHO 3 - Flash a boot animation(must have busybox and root)
+ECHO 4 - Flash an "update.zip" (Don't try to flash a ROM this way)
+ECHO     *REQUIRES GNM RECOVERY
+ECHO 5 - Flash Inopath update *REQUIRES ROOT AND STOCK BOOT/RECOVERY
+ECHO     IMAGES OF CURRENT DEVICE FIRMWARE IN THE STOCKIMAGES FOLDER
+ECHO 6 - Back to main menu
+ECHO.
+SET /P O=Type your choice then press ENTER:
+IF %O%==1 GOTO FBI
+IF %O%==2 GOTO FRI
+IF %O%==3 GOTO FBA
+IF %O%==4 GOTO FUZ
+IF %O%==5 GOTO FIU
+IF %O%==6 GOTO menu
 
 :TD
 adb wait-for-device
@@ -414,14 +435,11 @@ adb wait-for-device
 ECHO you are now fully stock. be carefull!
 GOTO MENU
 
-
-
 :RFM
 ECHO Installing Root support file manager...
 adb wait-for-device
 adb install es.apk
 GOTO MENU
-
 
 :UK
 ECHO Installing Unroot kit...
@@ -451,7 +469,6 @@ ECHO Images are in the dumpedImages folder!
 adb shell sleep 2
 GOTO MENU
 
-
 :IB
 ECHO Installing busybox...
 adb wait-for-device
@@ -465,7 +482,6 @@ adb shell su -c "/system/xbin/busybox --install /system/xbin"
 ECHO Done!
 adb shell sleep 2
 GOTO MENU
-
 
 :VPV
 ECHO opening the phone version...
@@ -540,7 +556,6 @@ adb shell sendevent /dev/input/event1 0 2 0
 adb shell sendevent /dev/input/event1 0 0 0
 GOTO MENU
 
-
 :FBI
 ECHO flashing the boot image
 adb wait-for-device
@@ -551,7 +566,6 @@ ECHO Done!
 ping 1.1.1.1 -n 1 -w 3000 > nul
 GOTO Menu
 
-
 :FRI
 ECHO flashing the recovery image
 adb wait-for-device
@@ -561,7 +575,6 @@ fastboot -i 0x0409 reboot
 ECHO Done!
 ping 1.1.1.1 -n 1 -w 3000 > nul
 GOTO Menu
-
 
 :FBA
 ECHO Flashing your boot animation!
@@ -583,32 +596,41 @@ ECHO install complete!
 adb shell sleep 2
 GOTO MENU
 
-
 :FUZ
-ECHO comming soon!
-adb shell sleep 1
+ECHO this has not been tested yet. If you don't want ot risk it,
+ECHO press ctrl+c now
+adb wait-for-device
+adb shell sleep 10
+ECHO preparing for update...
+adb shell su -c "rm /mnt/sdcard/update.zip"
+adb push updateZip\update.zip /sdcard/update.zip
+ECHO device is ready!
+adb shell su -c "echo '--update_package=/sdcard/update.zip' >> /cache/recovery/command"
+adb reboot recovery
+ECHO flashing...
+ECHO use the menu key on the phone to press "reboot system now"
+ECHO when the update is done
 GOTO MENU
-
 
 :FIU
 ECHO preparing for update...
+adb shell su -c "rm /mnt/sdcard/ipth_package.bin"
+adb push inopathUpdate\ipth_package.bin /sdcard/ipth_package.bin
 adb reboot bootloader
 fastboot -i 0x0409 flash boot stockImages\boot.img
 fastboot -i 0x0409 flash recovery stockImages\recovery.img
 fastboot -i 0x0409 reboot
 adb wait-for-device
-ECHO device detected, waiting for full boot and sdcard mount...
+ECHO device prepared, waiting for full boot and sdcard mount...
 adb shell sleep 60
-ECHO pushing update and rebooting...
-adb shell su -c "rm /mnt/sdcard/ipth_package.bin"
-adb push inopathUpdate\ipth_package.bin /sdcard/ipth_package.bin
+ECHO setting phone to update and rebooting...
 adb shell su -c "echo '--update_package=/sdcard/ipth_package.bin' >> /cache/recovery/command"
 adb reboot recovery
 ECHO You will NEED to do a battery pull AFTER the update is done
-ECHO a.k.a. when the progress bar goes away and its just
-ECHO the android guy with the exclamation point.
-ECHO Also please keep in mind that if you want modded boot/
-ECHO recovery images you MUST reflash them from the menu
+ECHO (When its just the android guy with the exclamation point).
+ECHO Also please keep in mind that if you want GNM recovery
+ECHO of the modded boot image of the new firmware (if it exists yet)
+ECHO you need to reflash it from the menu of "flash recovery"
 ECHO also you will have to delete the ipth_update from your sdcard
-ping 1.1.1.1 -n 1 -w 30000 > nul
+pause
 GOTO MENU

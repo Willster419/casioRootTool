@@ -14,6 +14,12 @@
 busybox
 mkyaffs2image
 su
+bootanimation_NO_SOUND
+bootanimation_ORIGIONAL
+bootanimation_SOUND
 
-#script that isn't mine
+# Script that isn't mine
 onandroid
+
+# Instructional text files
+*here.txt

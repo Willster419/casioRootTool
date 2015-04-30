@@ -16,19 +16,16 @@ ECHO 3 - Unroot (quick)
 ECHO 4 - Unroot (full) REQUIRES CORRECT STOCK BOOT IMAGE/RECOVERY
 ECHO 5 - Install (old working) root file manager
 ECHO 6 - Install Unroot kit
-ECHO 7 - Dump boot and recovery images (most likely for me)
-ECHO 8 - Install busybox
+ECHO 7 - Dump boot and recovery images(must have busybox and root)
+ECHO 8 - Install busybox(must be rooted)
 ECHO 9 - View Phone Version to get right boot/recovery images version
-ECHO 10 - Flash stock boot
-ECHO 11 - Flash stock recovery
-ECHO 12 - Flash Mod boot
-ECHO 13 - Flash Mod Recovery
-ECHO 14 - Reboot Recovery
-ECHO 15 - Reboot Bootloader
-ECHO 16 - Flash a boot animation
-ECHO 17 - Flash an "update.zip"
+ECHO 10 - Flash boot image(must have fastboot enabled)
+ECHO 11 - Flash recovery image(must have fastboot enabled)
+ECHO 12 - Flash a boot animation(must have busybox and root)
+ECHO 13 - Flash an "update.zip"
+ECHO 14 - Flash Inopath update REQUIRES ROOT AND CORRECT STOCK BOOT IMAGE/RECOVERY
 ECHO.
-ECHO 16 - Exit this tool
+ECHO 15 - Exit this tool
 ECHO.
 SET /P M=Type your choice then press ENTER:
 IF %M%==1 GOTO TD
@@ -40,39 +37,39 @@ IF %M%==6 GOTO UK
 IF %M%==7 GOTO DBR
 IF %M%==8 GOTO IB
 IF %M%==9 GOTO VPV
-IF %M%==10 GOTO FSB
-IF %M%==11 GOTO FSR
-IF %M%==12 GOTO FMB
-IF %M%==13 GOTO FMR
-IF %M%==14 GOTO RBR
-IF %M%==15 GOTO RBB
-IF %M%==16 GOTO FBA
-IF %M%==17 GOTO FUZ
-IF %M%==18 GOTO EXIT
+IF %M%==10 GOTO FBI
+IF %M%==11 GOTO FRI
+IF %M%==12 GOTO FBA
+IF %M%==13 GOTO FUZ
+IF %M%==14 GOTO FIU
+IF %M%==15 GOTO EXIT
 
 
 :TD
 ECHO Turning off wifi
 adb wait-for-device
 adb shell svc wifi disable
-ECHO.
 ECHO copying modded file over to device!
-adb push init.qcom.sdio.sh.mod /system/etc/init.qcom.sdio.sh
+adb push init.qcom.sdio.sh.mod1 /system/etc/init.qcom.sdio.sh
 ECHO rebooting
 adb reboot
 ECHO waiting for the device
 adb wait-for-device
+adb shell sleep 3
 ECHO rooting...
 adb push su /system/bin/su
 adb push Superuser.apk /system/app/Superuser.apk
+ECHO verifying root...
+adb shell sleep 5
+adb push init.qcom.sdio.sh.mod2 /system/etc/init.qcom.sdio.sh
 ECHO rebooting again...
+adb shell sleep 2
 adb reboot
 adb wait-for-device
-ECHO copying origional file to device
-adb push init.qcom.sdio.sh.orig /system/etc/init.qcom.sdio.sh
+adb shell sleep 3
 ECHO verifying root...
-adb shell chown root.root /system/bin/su
-adb shell chmod 06755 /system/bin/su
+adb shell sleep 2
+
 ECHO waiting for phone to fully boot for 20 sec..do not touch the phone!!!
 adb shell sleep 20
 ECHO installing unroot tool and file manager
@@ -87,6 +84,9 @@ GOTO MENU
 
 
 :BU
+ECHO Not currently working...
+adb shell sleep 2
+GOTO MENU
 ECHO Enabling fastboot!
 adb wait-for-device
 adb shell input keyevent 5
@@ -406,8 +406,8 @@ ECHO device will now reboot
 adb shell sleep 10
 adb wait-for-device
 adb reboot bootloader
-fastboot -i 0x0409 flash boot stockBoot\boot.img
-fastboot -i 0x0409 flash recovery stockRecovery\recovery.img
+fastboot -i 0x0409 flash boot stockImages\boot.img
+fastboot -i 0x0409 flash recovery stockImages\recovery.img
 fastboot -i 0x0409 reboot
 adb wait-for-device
 ECHO you are now fully stock. be carefull!
@@ -431,15 +431,19 @@ GOTO MENU
 :DBR
 ECHO Dumping boot and recovery images...
 adb wait-for-device
-adb shell busybox mount -o remount,rw /system
-adb shell rm -r /mnt/sdcard/clockworkmod/backup/casioRootPlus
+adb shell su -c "busybox mount -o remount,rw /system"
+adb shell su -c "rm -r /mnt/sdcard/clockworkmod/backup/casioRootPlus"
 del dumpedImages\recovery.img
 del dumpedImages\boot.img
-adb push mkyaffs2image /system/bin/mkyaffs2image
-adb push onandroid /system/bin/onandroid
-adb shell chmod 755 /system/bin/mkyaffs2image
-adb shell chmod 755 /system/bin/onandroid
-adb shell onandroid -c casioRootPlus -a boot,recovery
+adb push mkyaffs2image /sdcard/mkyaffs2image
+adb push onandroid /sdcard/onandroid
+adb shell su -c "busybox cp /sdcard/mkyaffs2image /system/bin/mkyaffs2image"
+adb shell su -c "busybox cp /sdcard/onandroid /system/bin/onandroid"
+adb shell su -c "rm /sdcard/onandroid"
+adb shell su -c "rm /sdcard/mkyaffs2image"
+adb shell su -c "chmod 755 /system/bin/mkyaffs2image"
+adb shell su -c "chmod 755 /system/bin/onandroid"
+adb shell su -c "onandroid -c casioRootPlus -a boot,recovery"
 adb pull /mnt/sdcard/clockworkmod/backup/casioRootPlus/boot.img dumpedImages\boot.img
 adb pull /mnt/sdcard/clockworkmod/backup/casioRootPlus/recovery.img dumpedImages\recovery.img
 ECHO Images are in the dumpedImages folder!
@@ -451,12 +455,12 @@ GOTO MENU
 ECHO Installing busybox...
 adb wait-for-device
 adb push busybox /data/local
-adb shell chmod 755 /data/local/busybox
-adb shell /data/local/busybox mount -o remount,rw /system
-adb shell /data/local/busybox mkdir /system/xbin
-adb shell /data/local/busybox cp /data/local/busybox /system/xbin/busybox
-adb shell chmod 755 /system/xbin/busybox
-adb shell /system/xbin/busybox --install /system/xbin
+adb shell su -c "chmod 755 /data/local/busybox"
+adb shell su -c "/data/local/busybox mount -o remount,rw /system"
+adb shell su -c "/data/local/busybox mkdir /system/xbin"
+adb shell su -c "/data/local/busybox cp /data/local/busybox /system/xbin/busybox"
+adb shell su -c "chmod 755 /system/xbin/busybox"
+adb shell su -c "/system/xbin/busybox --install /system/xbin"
 ECHO Done!
 adb shell sleep 2
 GOTO MENU
@@ -536,55 +540,44 @@ adb shell sendevent /dev/input/event1 0 0 0
 GOTO MENU
 
 
-:FSB
-adb reboot bootloader
-fastboot -i 0x0409 flash boot stockBoot\boot.img
-fastboot -i 0x0409 reboot
-GOTO MENU
-
-
-:FSR
-adb reboot bootloader
-fastboot -i 0x0409 flash recovery stockRecovery\recovery.img
-fastboot -i 0x0409 reboot
-GOTO MENU
-
-
-:FMB
-adb reboot bootloader
-fastboot -i 0x0409 flash boot modBoot\boot.img
-fastboot -i 0x0409 reboot
-GOTO MENU
-
-
-:FMR
-adb reboot bootloader
-fastboot -i 0x0409 flash recovery modRecovery\recovery.img
-fastboot -i 0x0409 reboot
-GOTO MENU
-
-
-:RBR
-adb wait-for-device
-adb reboot recovery
-GOTO MENU
-
-
-:RBB
+:FBI
+ECHO flashing the boot image
 adb wait-for-device
 adb reboot bootloader
-GOTO MENU
+fastboot -i 0x0409 flash boot bootImage\boot.img
+fastboot -i 0x0409 reboot
+ECHO Done!
+ping 1.1.1.1 -n 1 -w 3000 > nul
+GOTO Menu
+
+
+:FRI
+ECHO flashing the recovery image
+adb wait-for-device
+adb reboot bootloader
+fastboot -i 0x0409 flash recovery recoveryImage\recovery.img
+fastboot -i 0x0409 reboot
+ECHO Done!
+ping 1.1.1.1 -n 1 -w 3000 > nul
+GOTO Menu
 
 
 :FBA
 ECHO Flashing your boot animation!
-adb shell busybox mount -o remount,rw /system
-adb push bootAnimation\bootanimation /system/bin/bootanimation
-adb push bootAnimation\bootanimation.zip /system/media/bootanimation.zip
-adb push bootAnimation\Bootsound.mp3 /system/media/audio/ui/Bootsound.mp3
-adb shell chmod 755 /system/bin/bootanimation
-adb shell chmod 755 /system/media/bootanimation.zip
-adb shell chmod 755 /system/media/audio/ui/Bootsound.mp3
+adb wait-for-device
+adb shell su -c "busybox mount -o remount,rw /system"
+adb push bootAnimation\bootanimation /sdcard/bootanimation
+adb push bootAnimation\bootanimation.zip /sdcard/bootanimation.zip
+adb push bootAnimation\Bootsound.mp3 /sdcard/Bootsound.mp3
+adb shell su -c "busybox cp /sdcard/bootanimation /system/bin/bootanimation" 
+adb shell su -c "busybox cp /sdcard/bootanimation.zip /system/media/bootanimation.zip
+adb shell su -c "busybox cp /sdcard/Bootsound.mp3 /system/media/audio/ui/Bootsound.mp3"
+adb shell su -c "busybox chmod 755 /system/bin/bootanimation"
+adb shell su -c "busybox chmod 755 /system/media/bootanimation.zip"
+adb shell su -c "busybox chmod 755 /system/media/audio/ui/Bootsound.mp3"
+adb shell su -c "busybox rm /sdcard/bootanimation"
+adb shell su -c "busybox rm /sdcard/bootanimation.zip"
+adb shell su -c "busybox rm /sdcard/Bootsound.mp3"
 ECHO install complete!
 adb shell sleep 2
 GOTO MENU
@@ -592,5 +585,29 @@ GOTO MENU
 
 :FUZ
 ECHO comming soon!
-adb shell sleep 2
+adb shell sleep 1
+GOTO MENU
+
+
+:FIU
+ECHO preparing for update...
+adb reboot bootloader
+fastboot -i 0x0409 flash boot stockImages\boot.img
+fastboot -i 0x0409 flash recovery stockImages\recovery.img
+fastboot -i 0x0409 reboot
+adb wait-for-device
+ECHO device detected, waiting for full boot and sdcard mount...
+adb shell sleep 60
+ECHO pushing update and rebooting...
+adb shell su -c "rm /mnt/sdcard/ipth_package.bin"
+adb push inopathUpdate\ipth_package.bin /sdcard/ipth_package.bin
+adb shell su -c "echo '--update_package=/sdcard/ipth_package.bin' >> /cache/recovery/command"
+adb reboot recovery
+ECHO You will NEED to do a battery pull AFTER the update is done
+ECHO a.k.a. when the progress bar goes away and its just
+ECHO the android guy with the exclamation point.
+ECHO Also please keep in mind that if you want modded boot/
+ECHO recovery images you MUST reflash them from the menu
+ECHO also you will have to delete the ipth_update from your sdcard
+ping 1.1.1.1 -n 1 -w 30000 > nul
 GOTO MENU

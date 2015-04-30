@@ -17,9 +17,13 @@ su
 bootanimation_NO_SOUND
 bootanimation_ORIGIONAL
 bootanimation_SOUND
+bootanimation
 
 # Script that isn't mine
 onandroid
 
 # Instructional text files
 *here.txt
+
+# Zip files
+*.zip

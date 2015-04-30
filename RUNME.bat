@@ -3,7 +3,7 @@ COLOR 9b
 CLS
 :menu
 CLS
-ECHO Casio Root Tool Plus version 1.8 by: Willster419
+ECHO Casio Root Tool Plus version 1.8.1 by: Willster419
 ECHO By using the script you understand that this is done at YOUR own risk.
 ECHO Make sure your phone has usb debugging mode enabled!
 ECHO Make sure drivers are installed!
@@ -15,8 +15,11 @@ ECHO 4 - Install Unroot tool
 ECHO 5 - Dump boot and recovery images(must have busybox and root)
 ECHO 6 - Install busybox(must be rooted)
 ECHO 7 - View Phone Version to get right boot/recovery images version
+ECHO 8 - Fix Wifi Error (requires root)
 ECHO.
-ECHO 8 - Exit this tool
+ECHO 9 - Exit this tool
+ECHO.
+ECHO To stop the script at any time, press Ctrl+C
 ECHO.
 SET /P M=Type your choice then press ENTER:
 IF %M%==1 GOTO RU
@@ -26,7 +29,8 @@ IF %M%==4 GOTO UK
 IF %M%==5 GOTO DBR
 IF %M%==6 GOTO IB
 IF %M%==7 GOTO VPV
-IF %M%==8 GOTO EXIT
+IF %M%==8 GOTO FWE
+IF %M%==9 GOTO EXIT
 
 :RU
 cls
@@ -66,6 +70,7 @@ IF %O%==5 GOTO FIU
 IF %O%==6 GOTO menu
 
 :TD
+ECHO Starting Top Down root...
 adb wait-for-device
 set var6=su:
 set var3=running
@@ -395,8 +400,8 @@ adb shell sleep 3
 GOTO MENU
 
 :UR
-adb wait-for-device
 ECHO Verifying phone is ready for unroot...
+adb wait-for-device
 adb shell su -c "rm /system/etc/init.qcom.sdio.sh"
 adb push init.qcom.sdio.sh.orig /data/local/tmp/init.qcom.sdio.sh
 adb shell su -c "cp /data/local/tmp/init.qcom.sdio.sh /system/etc/init.qcom.sdio.sh"
@@ -470,6 +475,7 @@ ECHO boot.img not detected
 goto ND
 )
 ECHO Verifying phone is ready for unroot...
+adb wait-for-device
 adb shell su -c "rm /system/etc/init.qcom.sdio.sh"
 adb push init.qcom.sdio.sh.orig /data/local/tmp/init.qcom.sdio.sh
 adb shell su -c "cp /data/local/tmp/init.qcom.sdio.sh /system/etc/init.qcom.sdio.sh"
@@ -479,7 +485,6 @@ adb shell su -c "chmod 755 /system/bin"
 adb shell su -c "chmod 755 /system/app"
 adb shell su -c "chmod 755 /system"
 ECHO Unrooting fully to COMPLETE STOCK...
-adb wait-for-device
 adb shell am start -n com.universal.unroot/com.universal.unroot.MainActivity
 adb shell sleep 1
 adb shell sendevent /dev/input/event1 3 53 240
@@ -787,8 +792,10 @@ goto UND
 )
 set var3=running
 ECHO preparing for update...
-adb shell su -c "rm /mnt/sdcard/ipth_package.bin"
+adb wait-for-device
+adb shell su -c "rm /mnt/sdcard/ipth_package.bin" > nul
 adb push inopathUpdate\ipth_package.bin /sdcard/ipth_package.bin
+ECHO rebooting...
 adb reboot bootloader
 fastboot -i 0x0409 flash boot stockImages\boot.img
 fastboot -i 0x0409 flash recovery stockImages\recovery.img
@@ -801,7 +808,7 @@ for /f %%i in ('adb shell "getprop init.svc.bootanim"') do set var4=%%i
 if "%var3%"=="%var4%" (
 goto checkLoop1F
 )
-adb shell sleep 15
+adb shell sleep 1
 ECHO setting phone to update and rebooting...
 adb shell su -c "echo '--update_package=/sdcard/ipth_package.bin' >> /cache/recovery/command"
 adb reboot recovery
@@ -809,11 +816,23 @@ ECHO You will NEED to do a battery pull AFTER the update is done
 ECHO (When its just the android guy with the exclamation point).
 ECHO Also please keep in mind that if you want GNM recovery
 ECHO of the modded boot image of the new firmware (if it exists yet)
-ECHO you need to reflash it from the menu of "flash recovery"
-ECHO also you will have to delete the ipth_update from your sdcard
+ECHO you need to reflash it from the flash menu. You will also have
+ECHO to delete the ipth_update from your sdcard
 pause
 ECHO Done!
 ping 1.1.1.1 -n 1 -w 1000 > nul
+GOTO MENU
+
+:FWE
+ECHO Fixing the Wifi Error...
+adb wait-for-device
+adb shell su -c "rm /system/etc/init.qcom.sdio.sh"
+adb push init.qcom.sdio.sh.orig /data/local/tmp/init.qcom.sdio.sh
+adb shell su -c "system/xbin/busybox cp /data/local/tmp/init.qcom.sdio.sh /system/etc/init.qcom.sdio.sh"
+adb shell su -c "rm /data/local/tmp/init.qcom.sdio.sh"
+adb shell su -c "chmod 777 /system/etc/init.qcom.sdio.sh"
+ECHO Done!
+adb shell sleep 3
 GOTO MENU
 
 :ND

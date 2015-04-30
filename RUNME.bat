@@ -3,7 +3,7 @@ COLOR 9b
 CLS
 :menu
 CLS
-ECHO Casio Root Kit plus version 1.6.1 by: Willster419
+ECHO Casio Root Tool Plus version 1.7.1 by: Willster419
 ECHO By using the script you understand that this is done at YOUR own risk.
 ECHO Make sure your phone has usb debugging mode enabled!
 ECHO Make sure drivers are installed!
@@ -117,7 +117,10 @@ GOTO MENU
 ECHO Enabling fastboot!
 adb wait-for-device
 adb shell input keyevent 5
-adb shell sleep 2
+ECHO If a "complete application using" window has shown
+ECHO please select the stock dialer and then press enter
+pause
+adb shell sleep 1
 adb shell sendevent /dev/input/event1 3 53 340
 adb shell sendevent /dev/input/event1 3 54 650
 adb shell sendevent /dev/input/event1 3 50 5

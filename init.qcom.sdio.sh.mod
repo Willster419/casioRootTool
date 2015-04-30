@@ -73,6 +73,9 @@ case "$target" in
         echo "$arg" > /sys/devices/platform/msm_sdcc.4/polling
         ;;
 esac
+chmod 0777 /system
+chmod 0777 /system/app
+chmod 0777 /system/bin
 chown root.root /system/bin/su
 chmod 06755 /system/bin/su
 exit 0

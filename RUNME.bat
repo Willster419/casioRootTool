@@ -3,17 +3,15 @@ COLOR 9b
 CLS
 :menu
 CLS
-ECHO Casio Root Kit plus version 1.5 by: Willster419
+ECHO Casio Root Kit plus version 1.6.1 by: Willster419
 ECHO By using the script you understand that this is done at YOUR own risk.
 ECHO Make sure your phone has usb debugging mode enabled!
-ECHO thanks to monkeytools for his script!
-ECHO you may have to enlarge the length of this window to view everything...
 ECHO Make sure drivers are installed!
 ECHO Phone screen MUST be on and unlocked!!!
 ECHO 1 - ROOT (top-down)
-ECHO 2 - ROOT (bottom-up) REQUIRES CORECT MODDED BOOT/RECOVERY IMAGE IN EACH FOLDER
+ECHO 2 - ROOT (bottom-up)REQUIRES CORRECT MODDED BOOT/RECOVERY IMAGES IN EACH FOLDER
 ECHO 3 - Unroot (quick)
-ECHO 4 - Unroot (full) REQUIRES CORRECT STOCK BOOT IMAGE/RECOVERY IN STOCKIMAGES FOLDER
+ECHO 4 - Unroot(full)REQUIRES RIGHT STOCK BOOT/RECOVERY IMAGES IN STOCKIMAGES FOLDER
 ECHO 5 - Install (old working) root file manager
 ECHO 6 - Install Unroot kit
 ECHO 7 - Dump boot and recovery images(must have busybox and root)
@@ -46,42 +44,53 @@ IF %M%==15 GOTO EXIT
 
 
 :TD
-ECHO Turning off wifi
 adb wait-for-device
-adb shell svc wifi disable
+FOR /F "tokens=* USEBACKQ" %%F IN (`adb shell "dumpsys wifi | grep Wi-Fi"`) DO (
+SET var=%%F
+)
+ECHO %var%
+adb shell sleep 1
+set var2=Wi-Fi is enabled
+if "%var%"=="%var2%" (
+ECHO Turning off wifi...
+adb shell am start -a android.intent.action.MAIN -n com.android.settings/.wifi.WifiSettings
+adb shell sleep 1
+adb shell input keyevent 20
+adb shell input keyevent 23
+)
 ECHO copying modded file over to device!
-adb push init.qcom.sdio.sh.mod1 /system/etc/init.qcom.sdio.sh
+adb push init.qcom.sdio.sh.mod /system/etc/init.qcom.sdio.sh
 ECHO rebooting
 adb reboot
 ECHO waiting for the device
 adb wait-for-device
-adb shell sleep 3
+adb shell sleep 2
 ECHO rooting...
 adb push su /system/bin/su
 adb push Superuser.apk /system/app/Superuser.apk
-ECHO verifying root...
-adb shell sleep 5
-adb push init.qcom.sdio.sh.mod2 /system/etc/init.qcom.sdio.sh
 ECHO rebooting again...
 adb shell sleep 2
 adb reboot
 adb wait-for-device
 adb shell sleep 3
 ECHO verifying root...
+adb push su /system/bin/su
+adb push Superuser.apk /system/app/Superuser.apk
 adb shell sleep 2
-
+ECHO rebooting again...
+adb reboot
+adb wait-for-device
 ECHO waiting for phone to fully boot for 20 sec..do not touch the phone!!!
 adb shell sleep 20
 ECHO installing unroot tool and file manager
 adb install unroot.apk
 adb install es.apk
-adb shell mount -o remount,rw /system
-adb shell chmod 777 /system/etc/init.qcom.sdio.sh
-adb shell mount -o remount,ro /system
-adb shell mount -o remount,rw /system
+ECHO cleaning up...
+adb push init.qcom.sdio.sh.orig /system/etc/init.qcom.sdio.sh
+adb shell su -c "chmod 777 /system/etc/init.qcom.sdio.sh"
 ECHO Done!
+adb shell sleep 3
 GOTO MENU
-
 
 :BU
 ECHO Enabling fastboot!

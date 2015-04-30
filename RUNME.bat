@@ -84,9 +84,6 @@ GOTO MENU
 
 
 :BU
-ECHO Not currently working...
-adb shell sleep 2
-GOTO MENU
 ECHO Enabling fastboot!
 adb wait-for-device
 adb shell input keyevent 5
@@ -258,17 +255,11 @@ ECHO rebooting...
 fastboot -i 0x0409 flash boot bootImage\boot.img
 fastboot -i 0x0409 flash recovery recoveryImage\recovery.img
 fastboot -i 0x0409 reboot
-ECHO rebooting...
+ECHO rebooting again...
 adb wait-for-device
 adb reboot recovery
-adb kill-server
-adb start-server
-adb kill-server
-adb start-server
-adb kill-server
-adb start-server
-adb kill-server
-adb start-server
+ECHO Waiting for recovery...
+ping 1.1.1.1 -n 1 -w 15000 > nul
 ECHO rooting...
 adb shell mount /system
 adb push su /system/bin/su

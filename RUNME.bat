@@ -3,7 +3,7 @@ COLOR 9b
 CLS
 :menu
 CLS
-ECHO Casio Root Kit plus by: Willster419
+ECHO Casio Root Kit plus version 1.5 by: Willster419
 ECHO By using the script you understand that this is done at YOUR own risk.
 ECHO Make sure your phone has usb debugging mode enabled!
 ECHO thanks to monkeytools for his script!
@@ -11,9 +11,9 @@ ECHO you may have to enlarge the length of this window to view everything...
 ECHO Make sure drivers are installed!
 ECHO Phone screen MUST be on and unlocked!!!
 ECHO 1 - ROOT (top-down)
-ECHO 2 - ROOT (bottom-up)
+ECHO 2 - ROOT (bottom-up) REQUIRES CORECT MODDED BOOT/RECOVERY IMAGE IN EACH FOLDER
 ECHO 3 - Unroot (quick)
-ECHO 4 - Unroot (full) REQUIRES CORRECT STOCK BOOT IMAGE/RECOVERY
+ECHO 4 - Unroot (full) REQUIRES CORRECT STOCK BOOT IMAGE/RECOVERY IN STOCKIMAGES FOLDER
 ECHO 5 - Install (old working) root file manager
 ECHO 6 - Install Unroot kit
 ECHO 7 - Dump boot and recovery images(must have busybox and root)
@@ -23,7 +23,7 @@ ECHO 10 - Flash boot image(must have fastboot enabled)
 ECHO 11 - Flash recovery image(must have fastboot enabled)
 ECHO 12 - Flash a boot animation(must have busybox and root)
 ECHO 13 - Flash an "update.zip"
-ECHO 14 - Flash Inopath update REQUIRES ROOT AND CORRECT STOCK BOOT IMAGE/RECOVERY
+ECHO 14 - Flash Inopath update REQUIRES ROOT AND CORRECT STOCK BOOT IMAGE/RECOVERY IN STOCKIMAGES FOLDER
 ECHO.
 ECHO 15 - Exit this tool
 ECHO.
@@ -255,8 +255,8 @@ adb shell sendevent /dev/input/event1 0 2 0
 adb shell sendevent /dev/input/event1 0 0 0
 adb reboot bootloader
 ECHO rebooting...
-fastboot -i 0x0409 flash boot modBoot\boot.img
-fastboot -i 0x0409 flash recovery modRecovery\recovery.img
+fastboot -i 0x0409 flash boot bootImage\boot.img
+fastboot -i 0x0409 flash recovery recoveryImage\recovery.img
 fastboot -i 0x0409 reboot
 ECHO rebooting...
 adb wait-for-device
@@ -357,6 +357,7 @@ adb shell chmod 777 /system/etc/init.qcom.sdio.sh
 adb shell mount -o remount,ro /system
 adb shell reboot
 ECHO done!
+ping 1.1.1.1 -n 1 -w 3000 > nul
 GOTO MENU
 
 :URF

@@ -4,7 +4,7 @@ CLS
 rem display the menu
 :menu
 CLS
-ECHO #Casio Root Tool Plus version 2 by: Willster419
+ECHO #Casio Root Tool Plus version 2.1 by: Willster419
 ECHO #By using the script you understand that this is done at YOUR own risk.
 ECHO #Make sure your phone has usb debugging mode enabled!
 ECHO #Make sure drivers are installed!

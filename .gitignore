@@ -11,19 +11,16 @@
 *.img
 
 # Phone Binaries
-busybox
-mkyaffs2image
-su
-bootanimation_NO_SOUND
-bootanimation_ORIGIONAL
-bootanimation_SOUND
-bootanimation
-
-# Script that isn't mine
-onandroid
+tools/*
 
 # Instructional text files
 *here.txt
 
 # Zip files
 *.zip
+
+# Phone Update files
+*.bin
+
+# Boot Animation files
+*bootanimation*

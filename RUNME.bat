@@ -4,7 +4,7 @@ CLS
 rem display the menu
 :menu
 CLS
-ECHO #Casio Root Tool Plus version 2.1 by: Willster419
+ECHO #Casio Root Tool Plus version 2.2 by: Willster419
 ECHO #By using the script you understand that this is done at YOUR own risk.
 ECHO #Make sure your phone has usb debugging mode enabled!
 ECHO #Make sure drivers are installed!
@@ -21,8 +21,9 @@ ECHO 7 - View Phone Version
 ECHO 8 - Fix Wifi Error
 ECHO     *Requries root
 ECHO 9 - Save your locked device
+ECHO 10- Update your radio to M150
 ECHO.
-ECHO 10 - Exit this tool
+ECHO 11 - Exit this tool
 ECHO.
 ECHO #To stop the script at any time, press Ctrl+C
 ECHO.
@@ -37,7 +38,8 @@ IF %M%==6 GOTO IB
 IF %M%==7 GOTO VPV
 IF %M%==8 GOTO FWE
 IF %M%==9 GOTO SLD
-IF %M%==10 GOTO EXIT
+IF %M%==10 GOTO UR
+IF %M%==11 GOTO EXIT
 
 rem the root options menu
 :RU
@@ -67,11 +69,11 @@ ECHO 4 - Flash stock recovery image for your phone version
 ECHO     *Fastboot required
 ECHO 5 - Flash GNM recovery
 ECHO     *Fastboot required
-ECHO 6 - Flash a boot animation(must have busybox and root)
+ECHO 6 - Flash a boot animation
 ECHO     *Root and Busybox required
 ECHO 7 - Flash an "update.zip"
 ECHO     *Requires root GNM recovery
-ECHO 8 - Flash Inopath update 
+ECHO 8 - Flash Innopath system update 
 ECHO     *Requires root
 ECHO 9 - Back to main menu
 ECHO.
@@ -1121,42 +1123,86 @@ ECHO #Wait untill the update is complete to continue
 pause
 adb shell rm /sdcard/update.zip
 adb shell reboot
+ECHO #Install Complete!
 pause
 GOTO MENU
 
 :FIU
-ECHO #This update requires the following:
-ECHO #root access (will be tested for)
-ECHO #a supported phone model (will be tested for)
+GOTO MENU
+ECHO #This update requires root access
 pause
-ECHO #Checking if your phone build version is supported...
+ECHO #preparing for update...
+ping 1.1.1.1 -n 1 -w 500 > nul
+if exist backupRecovery.img (
+del backupRecovery.img
+)
+rem verifies root by calling the help command to see if the su binary is installed
+for /f %%i in ('adb shell su -h') do set var12=%%i
+if "%var12%"=="su:" (
+GOTO NR
+)
+rem get which update the user needs on his/her phone
+ECHO #Getting your phone build version for update...
 adb wait-for-device
 ping 1.1.1.1 -n 1 -w 500 > nul
-for /f %%i in ('adb shell "getprop ro.build.id | cut -c 5-8"') do set var5=%%i
-if not exist "bootImage/stock/%var5% stock boot.img" (
-GOTO NS
-)
-if not exist "recoveryImage/%var5% stock recovery.img" (
-GOTO NS
-)
-ECHO #Your phone version is supported!
-ping 1.1.1.1 -n 1 -w 500 > nul
-ECHO #Checking if your phone build version is supported for update...
-adb wait-for-device
-ping 1.1.1.1 -n 1 -w 500 > nul
+rem in each of these push which file is needed
 for /f %%i in ('adb shell "getprop ro.build.id | cut -c 5-8"') do set var5=%%i
 if "%var5%"=="M150"(
-ECHO #your phone build is already the latest build version
+ECHO #Your phone build %var5% is already the latest build version. Congrats!
 ping 1.1.1.1 -n 1 -w 3000 > nul
 GOTO MENU
 )
 if "%var5%"=="M140"(
-ECHO #your phone build is supported for update!
+ECHO #Build %var5% Detected! Sending update...
+adb push inopathUpdate\Casio_C771_M140ToM150.zip /sdcard/update.zip
 ping 1.1.1.1 -n 1 -w 2000 > nul
 GOTO updateSupported
 )
 if "%var5%"=="M130"(
-ECHO #your phone build is supported for update!
+ECHO #Build %var5% Detected! Sending update...
+adb push inopathUpdate\Casio_C771_M130ToM140.zip /sdcard/update.zip
+ping 1.1.1.1 -n 1 -w 2000 > nul
+GOTO updateSupported
+)
+if "%var5%"=="M120"(
+ECHO #Build %var5% Detected! Sending update...
+adb push inopathUpdate\Casio_C771_M120ToM130.zip /sdcard/update.zip
+ping 1.1.1.1 -n 1 -w 2000 > nul
+GOTO updateSupported
+)
+if "%var5%"=="M110"(
+ECHO #Build %var5% Detected! Sending update...
+adb push inopathUpdate\Casio_C771_M110ToM120.zip /sdcard/update.zip
+ping 1.1.1.1 -n 1 -w 2000 > nul
+GOTO updateSupported
+)
+if "%var5%"=="M100"(
+ECHO #Build %var5% Detected! Sending update...
+adb push inopathUpdate\Casio_C771_M100ToM110.zip /sdcard/update.zip
+ping 1.1.1.1 -n 1 -w 2000 > nul
+GOTO updateSupported
+)
+if "%var5%"=="M80"(
+ECHO #Build %var5% Detected! Sending update...
+adb push inopathUpdate\Casio_C771_M080ToM100.zip /sdcard/update.zip
+ping 1.1.1.1 -n 1 -w 2000 > nul
+GOTO updateSupported
+)
+if "%var5%"=="M70"(
+ECHO #Build %var5% Detected! Sending update...
+adb push inopathUpdate\Casio_C771_M070ToM080.zip /sdcard/update.zip
+ping 1.1.1.1 -n 1 -w 2000 > nul
+GOTO updateSupported
+)
+if "%var5%"=="M50"(
+ECHO #Build %var5% Detected! Sending update...
+adb push inopathUpdate\Casio_C771_M050ToM070.zip /sdcard/update.zip
+ping 1.1.1.1 -n 1 -w 2000 > nul
+GOTO updateSupported
+)
+if "%var5%"=="M30"(
+ECHO #Build %var5% Detected! Sending update...
+adb push inopathUpdate\Casio_C771_M030ToM050.zip /sdcard/update.zip
 ping 1.1.1.1 -n 1 -w 2000 > nul
 GOTO updateSupported
 )
@@ -1166,38 +1212,62 @@ ECHO #Have your build id ready for when you email
 pause
 GOTO MENU
 :updateSupported
-ECHO #preparing for update...
-rem verifies root by calling the help command to see if the su binary is installed
-for /f %%i in ('adb shell su -h') do set var12=%%i
-if "%var12%"=="su:" (
-GOTO NR
+rem backup the current recovery
+ECHO #Backing up the current recovery...
+for /f %%i in ('adb shell busybox') do set var10=%%i
+if "%var10%"=="busybox:" (
+GOTO NBB
 )
-adb shell su -c "rm /mnt/sdcard/ipth_package.bin" > nul
-adb push inopathUpdate\%var5%Update.bin /sdcard/ipth_package.bin
-ECHO #rebooting...
-adb reboot bootloader
-fastboot -i 0x0409 flash boot "bootImage/stock/%var5% stock boot.img"
-fastboot -i 0x0409 flash recovery "recoveryImage/%var5% stock recovery.img"
-fastboot -i 0x0409 reboot
-ECHO #device prepared, waiting for full boot and sdcard mount...
+adb shell su -c "busybox mount -o remount,rw /system"
+adb push tools\mkyaffs2image /sdcard/mkyaffs2image
+adb push tools\onandroid /sdcard/onandroid
+adb shell su -c "busybox cp /sdcard/mkyaffs2image /system/bin/mkyaffs2image"
+adb shell su -c "busybox cp /sdcard/onandroid /system/bin/onandroid"
+adb shell su -c "rm /sdcard/onandroid"
+adb shell su -c "rm /sdcard/mkyaffs2image"
+adb shell su -c "chmod 755 /system/bin/mkyaffs2image"
+adb shell su -c "chmod 755 /system/bin/onandroid"
+ECHO #Loading ONandroid script...
+adb shell sleep 1
+adb shell su -c "onandroid -c casioRootPlus -a recovery"
+adb pull /mnt/sdcard/clockworkmod/backup/casioRootPlus/recovery.img backupRecovery.img
+adb shell rm /mnt/sdcard/clockworkmod/backup/casioRootPlus/recovery.img > nul
+adb shell su -c "rm -r /mnt/sdcard/clockworkmod/backup/casioRootPlus"
+ECHO #Backup Complete!
+rem flash GNM recovery
+ECHO #flashing GNM recovery...
 adb wait-for-device
-:checkLoopUpdate
+adb reboot bootloader
+fastboot -i 0x0409 flash recovery recoveryImage/GNM.img
+fastboot -i 0x0409 reboot
+ECHO #Success, waiting for full boot...
+rem see echo
+adb wait-for-device
+adb shell sleep 5
+:checkLoopInoUpdate
 adb shell sleep 1
 for /f %%i in ('adb shell "getprop init.svc.bootanim"') do set var4=%%i
 if "running"=="%var4%" (
-goto checkLoopUpdate
+goto checkLoopInoUpdate
 )
-adb shell sleep 1
-ECHO #setting phone to update and rebooting...
-adb shell "echo '--update_package=SDCARD:ipth_package.bin' >> /cache/recovery/command"
+ECHO #Setting phone to update and rebooting...
+adb shell su -c "echo '--update_package=SDCARD:update.zip' >> /cache/recovery/command"
 rem adb shell su -c "ECHO #'--update_package=/sdcard/ipth_package.bin' >> /cache/recovery/command"
 adb reboot recovery
-ECHO #You will NEED to do a battery pull AFTER the update is done
-ECHO #(When its just the android guy with the exclamation point).
-ECHO #Also please keep in mind that if you want GNM recovery
-ECHO #of the modded boot image of the new firmware (if it exists yet)
-ECHO #you need to reflash it from the flash menu. You will also have
-ECHO #to delete the ipth_update from your sdcard
+rem wait for recovery to install the update
+ping 1.1.1.1 -n 1 -w 15000 > nul
+ECHO #flashing...
+ECHO #Wait untill the update is complete to continue
+pause
+rem remove the update and but the original recovery back on it
+adb shell rm /sdcard/update.zip
+adb shell "reboot bootloader"
+fastboot -i 0x0409 flash recovery backupRecovery.img
+fastboot -i 0x0409 reboot
+if exist backupRecovery.img (
+del backupRecovery.img
+)
+ECHO #done!
 pause
 GOTO MENU
 
@@ -1413,6 +1483,79 @@ fastboot -i 0x0409 erase cache
 fastboot -i 0x0409 reboot
 ECHO #Recovery Complete! You're device is wiped and you have
 ECHO #access to it again! Enjoy!
+pause
+GOTO MENU
+
+:UR
+ECHO #Updating your radio...
+adb wait-for-device
+rem verifies root by calling the help command to see if the su binary is installed
+for /f %%i in ('adb shell su -h') do set var12=%%i
+if "%var12%"=="su:" (
+GOTO NR
+)
+ECHO #preparing for update...
+if exist backupRecovery.img (
+del backupRecovery.img
+)
+rem backup the old recovery
+for /f %%i in ('adb shell busybox') do set var10=%%i
+if "%var10%"=="busybox:" (
+GOTO NBB
+)
+adb shell su -c "busybox mount -o remount,rw /system"
+adb push tools\mkyaffs2image /sdcard/mkyaffs2image
+adb push tools\onandroid /sdcard/onandroid
+adb shell su -c "busybox cp /sdcard/mkyaffs2image /system/bin/mkyaffs2image"
+adb shell su -c "busybox cp /sdcard/onandroid /system/bin/onandroid"
+adb shell su -c "rm /sdcard/onandroid"
+adb shell su -c "rm /sdcard/mkyaffs2image"
+adb shell su -c "chmod 755 /system/bin/mkyaffs2image"
+adb shell su -c "chmod 755 /system/bin/onandroid"
+ECHO #Loading ONandroid script...
+adb shell sleep 1
+adb shell su -c "onandroid -c casioRootPlus -a recovery"
+adb pull /mnt/sdcard/clockworkmod/backup/casioRootPlus/recovery.img backupRecovery.img
+adb shell rm /mnt/sdcard/clockworkmod/backup/casioRootPlus/recovery.img >nul
+adb shell su -c "rm -r /mnt/sdcard/clockworkmod/backup/casioRootPlus"
+ECHO #Backup Complete!
+rem flash the GNM recovery
+adb wait-for-device
+adb reboot bootloader
+fastboot -i 0x0409 flash recovery recoveryImage/GNM.img
+fastboot -i 0x0409 reboot
+rem copy the radio update files over to the device and set it to install it
+ECHO Waiting for a full boot to lock screen...
+adb wait-for-device
+adb shell sleep 5
+:checkLoopRadio
+adb shell sleep 1
+for /f %%i in ('adb shell "getprop init.svc.bootanim"') do set var4=%%i
+if "running"=="%var4%" (
+goto checkLoopRadio
+)
+adb shell sleep 10
+adb shell "rm /mnt/sdcard/update.zip" > nul
+adb push radioUpdate\m150RadioUpdate.zip /sdcard/update.zip
+adb shell su -c "echo '--update_package=SDCARD:update.zip' >> /cache/recovery/command"
+ECHO #device is ready! Rebooting...
+adb reboot recovery
+ECHO #waiting for recovery...
+rem wait for recovery to install the update zip
+ping 1.1.1.1 -n 1 -w 15000 > nul
+ECHO #flashing...
+ECHO #Wait untill the update is complete to continue
+pause
+rem remove the zip and but the original recovery back on it
+adb shell rm /sdcard/update.zip
+adb shell "reboot bootloader"
+fastboot -i 0x0409 flash recovery backupRecovery.img
+fastboot -i 0x0409 reboot
+adb wait-for-device
+if exist backupRecovery.img (
+del backupRecovery.img
+)
+ECHO #Install Complete!
 pause
 GOTO MENU
 

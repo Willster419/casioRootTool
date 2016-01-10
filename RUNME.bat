@@ -38,7 +38,7 @@ IF %M%==6 GOTO IB
 IF %M%==7 GOTO VPV
 IF %M%==8 GOTO FWE
 IF %M%==9 GOTO SLD
-IF %M%==10 GOTO UR
+IF %M%==10 GOTO URA
 IF %M%==11 GOTO EXIT
 
 rem the root options menu
@@ -1486,8 +1486,9 @@ ECHO #access to it again! Enjoy!
 pause
 GOTO MENU
 
-:UR
-ECHO #Updating your radio...
+:URA
+ECHO #Updating your radio to M150...
+ECHO #Waiting for device...
 adb wait-for-device
 rem verifies root by calling the help command to see if the su binary is installed
 for /f %%i in ('adb shell su -h') do set var12=%%i
@@ -1515,17 +1516,19 @@ adb shell su -c "chmod 755 /system/bin/onandroid"
 ECHO #Loading ONandroid script...
 adb shell sleep 1
 adb shell su -c "onandroid -c casioRootPlus -a recovery"
+ECHO #Copying your current recovery to the pc...
 adb pull /mnt/sdcard/clockworkmod/backup/casioRootPlus/recovery.img backupRecovery.img
 adb shell rm /mnt/sdcard/clockworkmod/backup/casioRootPlus/recovery.img >nul
 adb shell su -c "rm -r /mnt/sdcard/clockworkmod/backup/casioRootPlus"
 ECHO #Backup Complete!
 rem flash the GNM recovery
 adb wait-for-device
+ECHO #Rebooting to bootloader...
 adb reboot bootloader
 fastboot -i 0x0409 flash recovery recoveryImage/GNM.img
 fastboot -i 0x0409 reboot
 rem copy the radio update files over to the device and set it to install it
-ECHO Waiting for a full boot to lock screen...
+ECHO #Waiting for a full boot to lock screen...
 adb wait-for-device
 adb shell sleep 5
 :checkLoopRadio
@@ -1534,24 +1537,37 @@ for /f %%i in ('adb shell "getprop init.svc.bootanim"') do set var4=%%i
 if "running"=="%var4%" (
 goto checkLoopRadio
 )
+ECHO #Waiting 10 more seconds to make sure the SD Card is ready...
 adb shell sleep 10
+ECHO #Preparing the update...
 adb shell "rm /mnt/sdcard/update.zip" > nul
 adb push radioUpdate\m150RadioUpdate.zip /sdcard/update.zip
-adb shell su -c "echo '--update_package=SDCARD:update.zip' >> /cache/recovery/command"
-ECHO #device is ready! Rebooting...
+adb push tools\command /sdcard/command
+adb shell su -c "rm /cache/recovery/command"
+adb shell su -c "busybox cp /sdcard/command /cache/recovery/command"
+adb shell su -c "chmod 0777 /cache/recovery/command"
+ECHO #device is ready for update! Rebooting...
 adb reboot recovery
 ECHO #waiting for recovery...
 rem wait for recovery to install the update zip
 ping 1.1.1.1 -n 1 -w 15000 > nul
 ECHO #flashing...
-ECHO #Wait untill the update is complete to continue
+ping 1.1.1.1 -n 1 -w 1000 > nul
+ECHO #Waiting untill the update is complete to continue...
+ECHO #If it says "E:Can't open /sdcard/update.zip" you need to navagate to
+ECHO #"Flash zip menu ->> choose from SD ->> select update.zip"
 pause
-rem remove the zip and but the original recovery back on it
+rem remove the zip and put the original recovery back on it
 adb shell rm /sdcard/update.zip
+adb shell rm /sdcard/command
 adb shell "reboot bootloader"
+ECHO #Flashing the recovery you origionally had on it...
 fastboot -i 0x0409 flash recovery backupRecovery.img
 fastboot -i 0x0409 reboot
+ECHO #Rebooting...
 adb wait-for-device
+ECHO #Cleaning up...
+adb shell sleep 1
 if exist backupRecovery.img (
 del backupRecovery.img
 )
